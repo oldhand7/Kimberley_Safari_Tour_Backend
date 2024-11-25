@@ -7,14 +7,15 @@ const app = express();
 // Enable CORS for all requests
 app.use(cors());
 
+
 // Constants
 const API_KEY = "ARCTHATARKC6U36PE9MP73351NEUHTL18EB0A42606";
 const SECRET_KEY = "MLpgGjVuraYiU4nMHjIC1lYG6IwvYXpV";
 const BASE_URL_BOOKINGS = "https://api.bookeo.com/v2/bookings";
 
-// POST endpoint to fetch bookings
-app.post("/api/bookings", async (req, res) => {
-  const { productId } = req.body;
+// GET endpoint to fetch bookings
+app.get("/api/bookings", async (req, res) => {
+  const { productId } = req.query;
 
   if (!productId) {
     return res.status(400).json({ error: "productId is required" });
