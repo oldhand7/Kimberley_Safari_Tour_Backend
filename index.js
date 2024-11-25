@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
-
+const moment = require("moment")
 const app = express();
 
 // Enable CORS for all requests
@@ -24,6 +24,7 @@ app.get("/api/bookings", async (req, res) => {
   let startDate = moment("2024-11-01");
   const endDate = moment("2025-12-31T23:59:59Z");
   let allBookings = [];
+  let startTimes = []; // Array to store all startTimes
 
   try {
     while (startDate.isBefore(endDate)) {
@@ -34,21 +35,32 @@ app.get("/api/bookings", async (req, res) => {
       const url = `${BASE_URL_BOOKINGS}?apiKey=${API_KEY}&secretKey=${SECRET_KEY}&startTime=${startTime}&endTime=${endTime}&productId=${productId}`;
 
       const response = await axios.get(url, { headers: { "Content-Type": "application/json" } });
-      if (response.status === 200 && response.data.data) {
+
+      if (response.status === 200 && response.data.data && response.data.data.length > 0) {
         allBookings = allBookings.concat(response.data.data);
+
+        // Extract startTimes from response.data.data
+        response.data.data.forEach(booking => {
+          if (booking.startTime) {
+            startTimes.push(booking.startTime);
+          }
+        });
       }
 
       startDate = nextMonth;
     }
 
-    // Return all bookings
-    res.status(200).json({ bookings: allBookings });
+    // Remove duplicate startTimes
+    const uniqueStartTimes = Array.from(new Set(startTimes));
+    console.log(uniqueStartTimes);
+
+    // Return unique startTimes
+    res.json({ startTimes: uniqueStartTimes });
   } catch (error) {
     console.error("Error fetching bookings:", error.message);
     res.status(500).json({ error: "Failed to fetch bookings" });
   }
 });
-
 
 
 // Endpoint to fetch tours from the Bookeo API
