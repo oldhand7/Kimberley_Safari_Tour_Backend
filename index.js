@@ -3,6 +3,7 @@ const cors = require("cors");
 const axios = require("axios");
 const moment = require("moment")
 const app = express();
+app.use(express.json()); // Middleware to parse JSON request bodies
 
 // Enable CORS for all requests
 app.use(cors());
@@ -62,6 +63,23 @@ app.get("/api/bookings", async (req, res) => {
   }
 });
 
+app.post('/api/webhook', async (req, res) => {
+  try {
+    const payload = JSON.stringify(req.body); // Stringify the request body
+    const response = await axios.post(
+      'https://hooks.zapier.com/hooks/catch/20664855/2iyu3p8/',
+      { data: payload }, // Wrap the payload in an object with key "data"
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    res.status(200).json({ message: 'Payload sent successfully!', data: response.data });
+  } catch (error) {
+    res.status(500).json({ message: 'Error sending payload', error: error.message });
+  }
+});
 
 // Endpoint to fetch tours from the Bookeo API
 app.get("/api/tours", async (req, res) => {
